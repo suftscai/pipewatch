@@ -1,11 +1,13 @@
-from pipewatch.export.reporter import write_report, to_json, to_csv, summary_to_dict
-from pipewatch.export.scheduler import ReportScheduler, make_scheduler
+"""Export utilities for pipewatch reports and history."""
+from pipewatch.export.reporter import summary_to_dict, to_json, to_csv, write_report
+from pipewatch.export.history import append_entry, load_history, recent_failure_trend
 
 __all__ = [
-    "write_report",
+    "summary_to_dict",
     "to_json",
     "to_csv",
-    "summary_to_dict",
-    "ReportScheduler",
-    "make_scheduler",
+    "write_report",
+    "append_entry",
+    "load_history",
+    "recent_failure_trend",
 ]
