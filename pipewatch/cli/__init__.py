@@ -1,0 +1,1 @@
+"""pipewatch CLI package."""
