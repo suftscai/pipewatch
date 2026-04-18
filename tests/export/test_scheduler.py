@@ -26,6 +26,13 @@ def _alerts() -> list[Alert]:
     return []
 
 
+def _make_sched(out: Path, **kwargs) -> ReportScheduler:
+    """Helper to create a ReportScheduler with sensible test defaults."""
+    kwargs.setdefault("interval", 0.05)
+    kwargs.setdefault("get_state", lambda: (_summary(), _alerts()))
+    return ReportScheduler(str(out), "json", **kwargs)
+
+
 def test_scheduler_writes_file(tmp_path: Path) -> None:
     out = tmp_path / "report.json"
     calls: list[int] = []
@@ -34,7 +41,7 @@ def test_scheduler_writes_file(tmp_path: Path) -> None:
         calls.append(1)
         return _summary(), _alerts()
 
-    sched = ReportScheduler(str(out), "json", interval=0.05, get_state=get_state)
+    sched = _make_sched(out, interval=0.05, get_state=get_state)
     sched.start()
     time.sleep(0.18)
     sched.stop()
@@ -66,7 +73,7 @@ def test_scheduler_does_not_crash_on_bad_state(tmp_path: Path) -> None:
     def bad_state():
         raise RuntimeError("boom")
 
-    sched = ReportScheduler(str(out), "json", interval=0.05, get_state=bad_state)
+    sched = _make_sched(out, interval=0.05, get_state=bad_state)
     sched.start()
     time.sleep(0.12)
     sched.stop()  # Should not raise
