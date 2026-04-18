@@ -26,6 +26,15 @@ def _failure_rate_color(rate: float) -> str:
 
 
 def format_summary(summary: PipelineSummary, use_color: bool = True) -> str:
+    """Format a PipelineSummary into a human-readable string.
+
+    Args:
+        summary: Aggregated pipeline statistics.
+        use_color: Whether to include ANSI color codes in the output.
+
+    Returns:
+        A multi-line string suitable for terminal display.
+    """
     lines = []
     lines.append(_color("=== Pipeline Summary ===", BOLD, use_color))
     lines.append(f"  Total events : {summary.total}")
@@ -43,6 +52,15 @@ def format_summary(summary: PipelineSummary, use_color: bool = True) -> str:
 
 
 def format_alerts(alerts: List[Alert], use_color: bool = True) -> str:
+    """Format a list of alerts into a human-readable string.
+
+    Args:
+        alerts: List of triggered alerts.
+        use_color: Whether to include ANSI color codes in the output.
+
+    Returns:
+        A multi-line string listing each alert, or an OK message if none.
+    """
     if not alerts:
         return _color("[OK] No alerts triggered.", GREEN, use_color)
     lines = [_color("[!] ALERTS", RED, use_color)]
@@ -52,6 +70,16 @@ def format_alerts(alerts: List[Alert], use_color: bool = True) -> str:
 
 
 def render(summary: PipelineSummary, alerts: List[Alert], use_color: bool = True) -> str:
+    """Render the full terminal report combining summary and alerts.
+
+    Args:
+        summary: Aggregated pipeline statistics.
+        alerts: List of triggered alerts.
+        use_color: Whether to include ANSI color codes in the output.
+
+    Returns:
+        A complete formatted string ready for terminal output.
+    """
     parts = [
         format_summary(summary, use_color),
         "",
