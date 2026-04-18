@@ -36,7 +36,15 @@ def evaluate_alerts(
     summary: PipelineSummary,
     rules: list[AlertRule] | None = None,
 ) -> list[Alert]:
-    """Return a list of triggered alerts for the given summary."""
+    """Return a list of triggered alerts for the given summary.
+
+    Args:
+        summary: The pipeline summary to evaluate.
+        rules: Alert rules to check. Defaults to DEFAULT_RULES if not provided.
+
+    Returns:
+        A list of Alert objects for each rule whose condition was met.
+    """
     if rules is None:
         rules = DEFAULT_RULES
     triggered: list[Alert] = []
@@ -44,3 +52,14 @@ def evaluate_alerts(
         if rule.condition(summary):
             triggered.append(Alert(rule_name=rule.name, message=rule.message))
     return triggered
+
+
+def format_alerts(alerts: list[Alert]) -> str:
+    """Return a human-readable string summarising triggered alerts.
+
+    Returns an empty string if no alerts were triggered.
+    """
+    if not alerts:
+        return ""
+    lines = [f"[{alert.rule_name}] {alert.message}" for alert in alerts]
+    return "\n".join(lines)
