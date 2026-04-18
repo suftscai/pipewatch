@@ -1,4 +1,5 @@
-"""Export utilities for pipewatch."""
+"""pipewatch.export — reporting, scheduling, history, trend, comparison, and digest utilities."""
+
 from pipewatch.export.reporter import summary_to_dict, to_json, to_csv, write_report
 from pipewatch.export.scheduler import ReportScheduler
 from pipewatch.export.history import (
@@ -14,6 +15,7 @@ from pipewatch.export.comparison import (
     compare_entries,
     format_comparison,
 )
+from pipewatch.export.digest import DigestReport, compute_digest, format_digest
 
 __all__ = [
     "summary_to_dict", "to_json", "to_csv", "write_report",
@@ -21,4 +23,5 @@ __all__ = [
     "HistoryEntry", "append_entry", "load_history", "recent_failure_trend",
     "TrendReport", "compute_trend", "format_trend",
     "PipelineComparison", "ComparisonReport", "compare_entries", "format_comparison",
+    "DigestReport", "compute_digest", "format_digest",
 ]
