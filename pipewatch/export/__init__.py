@@ -1,3 +1,11 @@
-from pipewatch.export.reporter import to_json, to_csv, write_report
+from pipewatch.export.reporter import write_report, to_json, to_csv, summary_to_dict
+from pipewatch.export.scheduler import ReportScheduler, make_scheduler
 
-__all__ = ["to_json", "to_csv", "write_report"]
+__all__ = [
+    "write_report",
+    "to_json",
+    "to_csv",
+    "summary_to_dict",
+    "ReportScheduler",
+    "make_scheduler",
+]
