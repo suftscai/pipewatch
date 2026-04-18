@@ -16,15 +16,24 @@ def _color(text: str, code: str, use_color: bool = True) -> str:
     return f"{code}{text}{RESET}" if use_color else text
 
 
+def _failure_rate_color(rate: float) -> str:
+    """Return the appropriate color code for a given failure rate (0.0–1.0)."""
+    if rate >= 0.20:
+        return RED
+    if rate >= 0.10:
+        return YELLOW
+    return GREEN
+
+
 def format_summary(summary: PipelineSummary, use_color: bool = True) -> str:
     lines = []
     lines.append(_color("=== Pipeline Summary ===", BOLD, use_color))
     lines.append(f"  Total events : {summary.total}")
     lines.append(f"  Errors       : {_color(str(summary.errors), RED, use_color)}")
     lines.append(f"  Warnings     : {_color(str(summary.warnings), YELLOW, use_color)}")
-    rate = summary.failure_rate * 100
-    rate_str = f"{rate:.1f}%"
-    color = RED if rate >= 20 else (YELLOW if rate >= 10 else GREEN)
+    rate = summary.failure_rate
+    rate_str = f"{rate * 100:.1f}%"
+    color = _failure_rate_color(rate)
     lines.append(f"  Failure rate : {_color(rate_str, color, use_color)}")
     if summary.top_failing:
         lines.append("  Top failing pipelines:")
@@ -38,7 +47,7 @@ def format_alerts(alerts: List[Alert], use_color: bool = True) -> str:
         return _color("[OK] No alerts triggered.", GREEN, use_color)
     lines = [_color("[!] ALERTS", RED, use_color)]
     for alert in alerts:
-        lines.append(f"  • {alert.message}")
+        lines.append(f"  \u2022 {alert.message}")
     return "\n".join(lines)
 
 
