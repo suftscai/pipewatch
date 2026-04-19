@@ -71,3 +71,19 @@ def test_recent_failure_trend_limited(tmp_path):
         append_entry(p, _summary())
     trend = recent_failure_trend(p, n=4)
     assert len(trend) == 4
+
+
+def test_recent_failure_trend_empty(tmp_path):
+    """recent_failure_trend on a missing file should return an empty list."""
+    p = tmp_path / "missing.jsonl"
+    trend = recent_failure_trend(p, n=5)
+    assert trend == []
+
+
+def test_recent_failure_trend_fewer_than_n(tmp_path):
+    """When fewer entries exist than n, all available rates are returned."""
+    p = tmp_path / "history.jsonl"
+    append_entry(p, _summary(total=10, errors=1))
+    append_entry(p, _summary(total=10, errors=2))
+    trend = recent_failure_trend(p, n=10)
+    assert len(trend) == 2
