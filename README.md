@@ -38,6 +38,12 @@ Check the current health status of all registered pipelines:
 pipewatch status
 ```
 
+Filter status output to show only failing or warning pipelines:
+
+```bash
+pipewatch status --filter unhealthy
+```
+
 Example output:
 
 ```
@@ -61,7 +67,17 @@ pipelines:
   - name: transform_users
     log: /var/log/etl/transform.log
 alert_on: [failure, timeout, stall]
+notify:
+  slack_webhook: https://hooks.slack.com/services/your/webhook/url
 ```
+
+Supported `alert_on` values:
+
+| Value     | Description                                      |
+|-----------|--------------------------------------------------|
+| `failure` | Triggered when a pipeline exits with an error    |
+| `timeout` | Triggered when a pipeline exceeds its time limit |
+| `stall`   | Triggered when no log activity is detected       |
 
 ---
 
