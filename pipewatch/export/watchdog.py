@@ -25,6 +25,17 @@ class WatchdogReport:
         return bool(self.silent)
 
 
+def _build_latest_seen(entries: List[HistoryEntry]) -> dict[str, datetime]:
+    """Return a mapping of pipeline name to its most recent timestamp."""
+    latest: dict[str, datetime] = {}
+    for entry in entries:
+        ts = entry.timestamp
+        for pipeline in entry.top_failing:
+            if pipeline not in latest or ts > latest[pipeline]:
+                latest[pipeline] = ts
+    return latest
+
+
 def detect_silent(
     entries: List[HistoryEntry],
     threshold_seconds: float = 300.0,
@@ -34,12 +45,7 @@ def detect_silent(
     if now is None:
         now = datetime.utcnow()
 
-    latest: dict[str, datetime] = {}
-    for entry in entries:
-        ts = entry.timestamp
-        for pipeline in entry.top_failing:
-            if pipeline not in latest or ts > latest[pipeline]:
-                latest[pipeline] = ts
+    latest = _build_latest_seen(entries)
 
     silent: List[SilentPipeline] = []
     cutoff = now - timedelta(seconds=threshold_seconds)
