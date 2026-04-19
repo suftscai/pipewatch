@@ -1,12 +1,9 @@
-"""Append-only history log for pipeline summaries."""
+"""History entry storage and retrieval for pipeline summaries."""
 from __future__ import annotations
-
+from dataclasses import dataclass, field
+from typing import List, Dict
 import json
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import List
-
+import os
 from pipewatch.analysis.aggregator import PipelineSummary
 
 
@@ -14,51 +11,46 @@ from pipewatch.analysis.aggregator import PipelineSummary
 class HistoryEntry:
     timestamp: str
     total_events: int
-    total_failures: int
-    failure_rate: float
-    failures_by_pipeline: dict = field(default_factory=dict)
-    events_by_pipeline: dict = field(default_factory=dict)
+    error_count: int
+    warning_count: int
+    pipeline_errors: Dict[str, int] = field(default_factory=dict)
+    error_messages: Dict[str, List[str]] = field(default_factory=dict)
 
 
-def _entry_from_summary(summary: PipelineSummary) -> HistoryEntry:
-    total = summary.total_events
-    rate = summary.total_failures / total if total > 0 else 0.0
+def _entry_from_summary(summary: PipelineSummary, timestamp: str) -> HistoryEntry:
     return HistoryEntry(
-        timestamp=datetime.now(timezone.utc).isoformat(),
-        total_events=total,
-        total_failures=summary.total_failures,
-        failure_rate=rate,
-        failures_by_pipeline=dict(summary.failures_by_pipeline),
-        events_by_pipeline=dict(summary.events_by_pipeline),
+        timestamp=timestamp,
+        total_events=summary.total_events,
+        error_count=summary.error_count,
+        warning_count=summary.warning_count,
+        pipeline_errors=dict(summary.errors_by_pipeline),
+        error_messages={
+            p: list(msgs) for p, msgs in getattr(summary, "messages_by_pipeline", {}).items()
+        },
     )
 
 
-def append_entry(path: Path, summary: PipelineSummary) -> HistoryEntry:
-    entry = _entry_from_summary(summary)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a") as fh:
-        fh.write(json.dumps(asdict(entry)) + "\n")
-    return entry
-
-
-def load_history(path: Path) -> List[HistoryEntry]:
-    if not path.exists():
-        return []
-    entries: List[HistoryEntry] = []
-    with path.open() as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                data = json.loads(line)
-                entries.append(HistoryEntry(**data))
-            except (json.JSONDecodeError, TypeError):
-                continue
-    return entries
-
-
-def recent_failure_trend(path: Path, window: int = 10) -> List[float]:
+def append_entry(path: str, entry: HistoryEntry) -> None:
     entries = load_history(path)
-    recent = entries[-window:] if len(entries) > window else entries
-    return [e.failure_rate for e in recent]
+    entries.append(entry)
+    with open(path, "w") as f:
+        json.dump([e.__dict__ for e in entries], f)
+
+
+def load_history(path: str) -> List[HistoryEntry]:
+    if not os.path.exists(path):
+        return []
+    with open(path) as f:
+        raw = json.load(f)
+    return [HistoryEntry(**r) for r in raw]
+
+
+def recent_failure_trend(history: List[HistoryEntry], window: int = 10) -> List[float]:
+    recent = history[-window:]
+    rates = []
+    for e in recent:
+        if e.total_events > 0:
+            rates.append(e.error_count / e.total_events)
+        else:
+            rates.append(0.0)
+    return rates
