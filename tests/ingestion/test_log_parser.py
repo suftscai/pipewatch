@@ -50,3 +50,17 @@ def test_parse_lines_empty():
 def test_raw_preserved():
     event = parse_line(VALID_LINE)
     assert event.raw == VALID_LINE.strip()
+
+
+@pytest.mark.parametrize("level,expected_failure", [
+    ("ERROR", True),
+    ("WARN",  True),
+    ("INFO",  False),
+    ("DEBUG", False),
+])
+def test_is_failure_by_level(level, expected_failure):
+    """Verify that is_failure reflects the log level correctly."""
+    line = f"2024-05-01T12:00:00 {level:<5} orders-etl Some message here"
+    event = parse_line(line)
+    assert event is not None, f"Expected parse_line to succeed for level {level!r}"
+    assert event.is_failure is expected_failure
