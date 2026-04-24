@@ -20,6 +20,17 @@ def _build_args(**kwargs):
     return argparse.Namespace(**defaults)
 
 
+def _write_snapshot(path, error_counts):
+    """Write a minimal snapshot JSON file to *path* with the given error_counts."""
+    data = {
+        "timestamp": 1.0,
+        "summary": {"error_counts": error_counts},
+        "alerts": [],
+        "label": "",
+    }
+    Path(path).write_text(json.dumps(data))
+
+
 def test_add_snapshot_subparser_registers():
     parser = argparse.ArgumentParser()
     subs = parser.add_subparsers()
@@ -50,10 +61,8 @@ def test_run_snapshot_cmd_diff_missing(tmp_path, capsys):
 
 
 def test_run_snapshot_cmd_diff_existing(tmp_path, capsys):
-    old = Snapshot(timestamp=1.0, summary={"error_counts": {"p": 0}}, alerts=[])
     p = tmp_path / "old.json"
-    import json
-    p.write_text(json.dumps({"timestamp": 1.0, "summary": {"error_counts": {"p": 0}}, "alerts": [], "label": ""}))
+    _write_snapshot(p, {"p": 0})
     with patch("pipewatch.cli.snapshot_cmd.run_once", return_value=(_summary(), [])):
         run_snapshot_cmd(_build_args(diff=str(p)))
     out = capsys.readouterr().out
