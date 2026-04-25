@@ -31,6 +31,11 @@ def has_drift(report: DriftReport) -> bool:
     return any(r.is_drifting for r in report.results)
 
 
+def drifting_pipelines(report: DriftReport) -> List[DriftResult]:
+    """Return only the results that are flagged as drifting, sorted by delta descending."""
+    return [r for r in report.results if r.is_drifting]
+
+
 def _rate(entries: Sequence[HistoryEntry], pipeline: str) -> float:
     total = sum(e.pipeline_totals.get(pipeline, 0) for e in entries)
     errors = sum(e.pipeline_errors.get(pipeline, 0) for e in entries)
