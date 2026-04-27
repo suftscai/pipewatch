@@ -63,3 +63,18 @@ def format_alerts(alerts: list[Alert]) -> str:
         return ""
     lines = [f"[{alert.rule_name}] {alert.message}" for alert in alerts]
     return "\n".join(lines)
+
+
+def get_alert_names(alerts: list[Alert]) -> list[str]:
+    """Return a list of rule names for the given triggered alerts.
+
+    Useful for programmatic checks, such as asserting which specific rules
+    fired without parsing formatted output.
+
+    Args:
+        alerts: The list of triggered Alert objects.
+
+    Returns:
+        A list of rule name strings in the same order as the input.
+    """
+    return [alert.rule_name for alert in alerts]
