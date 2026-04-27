@@ -36,11 +36,22 @@ def save_snapshot(snapshot: Snapshot, path: Path) -> None:
 
 
 def load_snapshot(path: Path) -> Optional[Snapshot]:
+    """Load a snapshot from a JSON file.
+
+    Returns None if the file does not exist.
+    Raises ValueError if the file content is not a valid snapshot.
+    """
     if not path.exists():
         return None
     with open(path) as f:
-        data = json.load(f)
-    return Snapshot(**data)
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse snapshot file '{path}': {e}") from e
+    try:
+        return Snapshot(**data)
+    except TypeError as e:
+        raise ValueError(f"Invalid snapshot structure in '{path}': {e}") from e
 
 
 def diff_snapshots(old: Snapshot, new: Snapshot) -> dict:
