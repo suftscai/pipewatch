@@ -28,6 +28,12 @@ class QuotaReport:
     def compliant(self) -> bool:
         return len(self.violations) == 0
 
+    def worst_offender(self) -> QuotaResult | None:
+        """Return the QuotaResult with the highest overage, or None if no violations."""
+        if not self.violations:
+            return None
+        return max(self.violations, key=lambda r: r.overage)
+
 
 def compute_quota(
     history: List[HistoryEntry],
