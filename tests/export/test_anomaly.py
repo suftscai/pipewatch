@@ -65,3 +65,18 @@ def test_format_anomaly_shows_flag():
     text = format_anomaly(report)
     assert "[ANOMALY]" in text
     assert "pipe" in text
+
+
+def test_multiple_pipelines_partial_anomaly():
+    """Only the pipeline with a spike should be flagged as an anomaly."""
+    history = [
+        _entry({"stable": 1, "spiking": 0}, {"stable": 10, "spiking": 10})
+        for _ in range(5)
+    ]
+    current = _entry({"stable": 1, "spiking": 5}, {"stable": 10, "spiking": 10})
+    report = detect_anomalies(history, current, threshold=0.15)
+
+    assert report.has_anomalies
+    anomaly_map = {a.pipeline: a for a in report.anomalies}
+    assert not anomaly_map["stable"].is_anomaly
+    assert anomaly_map["spiking"].is_anomaly
