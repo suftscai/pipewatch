@@ -91,3 +91,14 @@ def test_format_silence_shows_pipeline_name():
     text = format_silence(report)
     assert "critical_pipe" in text
     assert "SILENT" in text
+
+
+def test_format_silence_no_silent_pipelines():
+    """Verify format_silence output when pipelines exist but none are flagged."""
+    entries = [
+        _entry("pipe_ok", errors=1, minutes_ago=60 * 1),
+    ]
+    report = compute_silence(entries, window=24, threshold_hours=6.0)
+    text = format_silence(report)
+    assert "SILENT" not in text
+    assert "pipe_ok" in text
